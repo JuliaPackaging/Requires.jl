@@ -1,5 +1,7 @@
 module Requires
 
-# package code goes here
+include("getthing.jl")
+include("require.jl")
+include("lazymod.jl")
 
 end # module
