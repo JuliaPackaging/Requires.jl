@@ -7,9 +7,6 @@ faster, maybe. It supports specifying glue code in packages which will
 load automatically when a another package is loaded, so that explicit
 dependencies (and long load times) can be avoided.
 
-This code has powered Juno since forever, so it should be pretty reliable.
-Note that the package itself is brand new and may have small issues, however.
-
 Usage is as simple as
 
 ```julia
