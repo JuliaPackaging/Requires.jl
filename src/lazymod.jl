@@ -11,15 +11,15 @@ end
 
 function lazymod (mod, path)
   quote
-    function $(symbol(lowercase(string(mod))))()
+    function $(mod |> symbol |> string |> lowercase |> symbol |> esc)()
       if !isdefined($(current_module()), $(Expr(:quote, mod)))
-        includehere(path) = eval(Expr(:call, :include, path))
-        includehere(joinpath(dirname(@__FILE__), $path))
-        loadmod(string($mod))
+        includehere(path) = eval($(current_module()), Expr(:call, :include, path))
+        includehere(joinpath(dirname(@__FILE__), $(esc(path))))
+        loadmod(string($(esc(mod))))
       end
-      $mod
+      $(esc(mod))
     end
-  end |> esc
+  end
 end
 
 macro lazymod (args...)
