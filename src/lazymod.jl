@@ -4,7 +4,7 @@ function lazymod(mod)
   quote
     function $(symbol(lowercase(string(mod))))()
       require($(string(mod)))
-      $mod
+      Main.$mod
     end
   end |> esc
 end
