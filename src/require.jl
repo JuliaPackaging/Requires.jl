@@ -23,12 +23,28 @@ loadmod(mod) =
 importexpr(mod::Symbol) = Expr(:import, mod)
 importexpr(mod::Expr) = Expr(:import, map(symbol, split(string(mod), "."))...)
 
+function withpath(f, path)
+  tls = task_local_storage()
+  hassource = haskey(tls, :SOURCE_PATH)
+  hassource && (path′ = tls[:SOURCE_PATH])
+  tls[:SOURCE_PATH] = path
+  try
+    return f()
+  finally
+    hassource ?
+      (tls[:SOURCE_PATH] = path′) :
+      delete!(tls, :SOURCE_PATH)
+  end
+end
+
 macro require (mod, expr)
   quote
     listenmod($(string(mod))) do
-      $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
-                                                 importexpr(mod),
-                                                 expr)))))
+      withpath(@__FILE__) do
+        $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
+                                                   importexpr(mod),
+                                                   expr)))))
+      end
     end
     nothing
   end
