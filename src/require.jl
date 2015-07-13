@@ -37,7 +37,7 @@ function withpath(f, path)
   end
 end
 
-macro require (mod, expr)
+macro require(mod, expr)
   quote
     listenmod($(string(mod))) do
       withpath(@__FILE__) do

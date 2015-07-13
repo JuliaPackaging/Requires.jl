@@ -9,7 +9,7 @@ function lazymod(mod)
   end |> esc
 end
 
-function lazymod (mod, path)
+function lazymod(mod, path)
   quote
     function $(mod |> symbol |> string |> lowercase |> symbol |> esc)()
       if !isdefined($(current_module()), $(Expr(:quote, mod)))
@@ -22,6 +22,6 @@ function lazymod (mod, path)
   end
 end
 
-macro lazymod (args...)
+macro lazymod(args...)
   lazymod(args...)
 end

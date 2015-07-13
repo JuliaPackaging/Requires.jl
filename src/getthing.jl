@@ -5,7 +5,7 @@ isexpr(x) = false
 isexpr(x::Expr, ts...) = x.head in ts
 isexpr(x, ts...) = any(T->isa(T, Type) && isa(x, T), ts)
 
-macro as (as, exs...)
+macro as(as, exs...)
   thread(x) = isexpr(x, :block) ? thread(subexprs(x)...) : x
 
   thread(x, ex) =
@@ -20,7 +20,7 @@ macro as (as, exs...)
   esc(thread(exs...))
 end
 
-macro _ (args...)
+macro _(args...)
   :(@as $(esc(:_)) $(map(esc, args)...))
 end
 
