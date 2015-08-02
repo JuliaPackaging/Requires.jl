@@ -4,9 +4,25 @@ if VERSION < v"0.4-dev"
   Base.split(xs, x; keep=false) = split(xs, x, false)
 end
 
-function Base.require(s::ASCIIString)
-  invoke(require, (String,), s)
-  loadmod(s)
+if VERSION < v"0.4-"
+
+  function Base.require(s::ASCIIString)
+    invoke(require, (String,), s)
+    loadmod(s)
+  end
+
+else
+  eval(Base, quote
+    import MacroTools, Requires
+  end)
+  eval(Base, quote
+
+  MacroTools.@hook function require(s::Symbol)
+    super(s)
+    Requires.loadmod(string(s))
+  end
+
+  end)
 end
 
 loaded(mod) = getthing(Main, mod) != nothing
