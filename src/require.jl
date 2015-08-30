@@ -1,6 +1,8 @@
 export @require
 
-if VERSION < v"0.4-dev"
+isprecompiling() = VERSION > v"v0.4-" && ccall(:jl_generating_output, Cint, ()) == 1
+
+if VERSION < v"0.4-"
   Base.split(xs, x; keep=false) = split(xs, x, false)
 end
 
@@ -55,11 +57,15 @@ end
 
 macro require(mod, expr)
   quote
-    listenmod($(string(mod))) do
-      withpath(@__FILE__) do
-        $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
-                                                   importexpr(mod),
-                                                   expr)))))
+    if isprecompiling()
+      $(esc(:eval))($(Expr(:quote, :(Requires.@init Requires.@require $mod $expr))))
+    else
+      listenmod($(string(mod))) do
+        withpath(@__FILE__) do
+          $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
+                                                     importexpr(mod),
+                                                     expr)))))
+        end
       end
     end
     nothing
