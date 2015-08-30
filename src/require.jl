@@ -4,7 +4,7 @@ if VERSION < v"0.4-dev"
   Base.split(xs, x; keep=false) = split(xs, x, false)
 end
 
-if VERSION < v"0.4-"
+@init if VERSION < v"0.4-"
 
   function Base.require(s::ASCIIString)
     invoke(require, (String,), s)
