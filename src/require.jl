@@ -55,13 +55,24 @@ function withpath(f, path)
   end
 end
 
+function err(f, listener, mod)
+  try
+    f()
+  catch e
+    warn("Error requiring $mod from $listener:")
+    showerror(STDERR, e, catch_backtrace())
+  end
+end
+
 macro require(mod, expr)
   ex = quote
     listenmod($(string(mod))) do
       withpath(@__FILE__) do
-        $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
-                                                   importexpr(mod),
-                                                   expr)))))
+        err($(current_module()), $(string(mod))) do
+          $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
+                                                     importexpr(mod),
+                                                     expr)))))
+        end
       end
     end
   end
