@@ -1,12 +1,14 @@
 export @init
 
 macro definit()
-  :(if !isdefined(:__init__)
+  quote
+    if !isdefined(:__inits__)
       const $(esc(:__inits__)) = Function[]
-      function $(esc(:__init__))()
-        @init
-      end
-    end)
+    end
+    if !isdefined(:__init__)
+      $(esc(:__init__))() = @init
+    end
+  end
 end
 
 function initm(ex)
