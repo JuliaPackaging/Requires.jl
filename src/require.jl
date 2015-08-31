@@ -56,18 +56,20 @@ function withpath(f, path)
 end
 
 macro require(mod, expr)
-  quote
-    if isprecompiling()
-      $(esc(:eval))($(Expr(:quote, :(Requires.@init Requires.@require $mod $expr))))
-    else
-      listenmod($(string(mod))) do
-        withpath(@__FILE__) do
-          $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
-                                                     importexpr(mod),
-                                                     expr)))))
-        end
+  ex = quote
+    listenmod($(string(mod))) do
+      withpath(@__FILE__) do
+        $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
+        importexpr(mod),
+        expr)))))
       end
     end
-    nothing
+  end
+  quote
+    if isprecompiling()
+      @init $(ex)
+    else
+      $(ex)
+    end
   end
 end
