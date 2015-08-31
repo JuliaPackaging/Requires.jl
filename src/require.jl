@@ -6,7 +6,7 @@ if VERSION < v"0.4-"
   Base.split(xs, x; keep=false) = split(xs, x, false)
 end
 
-@init if VERSION < v"0.4-"
+@init @guard if VERSION < v"0.4-"
 
   function Base.require(s::ASCIIString)
     invoke(require, (String,), s)
@@ -67,7 +67,7 @@ macro require(mod, expr)
   end
   quote
     if isprecompiling()
-      @init $(ex)
+      @init @guard $(ex)
     else
       $(ex)
     end
