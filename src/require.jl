@@ -61,6 +61,7 @@ function err(f, listener, mod)
   catch e
     warn("Error requiring $mod from $listener:")
     showerror(STDERR, e, catch_backtrace())
+    println(STDERR)
   end
 end
 
