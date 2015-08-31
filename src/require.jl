@@ -60,8 +60,8 @@ macro require(mod, expr)
     listenmod($(string(mod))) do
       withpath(@__FILE__) do
         $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
-        importexpr(mod),
-        expr)))))
+                                                   importexpr(mod),
+                                                   expr)))))
       end
     end
   end
