@@ -3,7 +3,7 @@ export @lazymod
 function lazymod(mod)
   quote
     function $(symbol(lowercase(string(mod))))()
-      require($(string(mod)))
+      @eval import $mod
       Main.$mod
     end
   end |> esc
