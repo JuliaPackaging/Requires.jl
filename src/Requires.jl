@@ -5,6 +5,5 @@ module Requires
 include("init.jl")
 include("getthing.jl")
 include("require.jl")
-include("lazymod.jl")
 
 end # module
