@@ -41,13 +41,13 @@ end
 getthing(name::Vector{Symbol}, default = nothing) =
   getthing(Main, name, default)
 
-getthing(mod::Module, name::String, default = nothing) =
+getthing(mod::Module, name::AbstractString, default = nothing) =
   name == "" ?
     default :
     @_ name split(_, ".", keep=false) map(symbol, _) getthing(mod, _, default)
 
-getthing(name::String, default = nothing) =
+getthing(name::AbstractString, default = nothing) =
   getthing(Main, name, default)
 
-getthing(::Nothing, default) = default
-getthing(mod, ::Nothing, default) = default
+getthing(::(@compat Void), default) = default
+getthing(mod, ::(@compat Void), default) = default
