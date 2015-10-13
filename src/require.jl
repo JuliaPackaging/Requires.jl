@@ -29,7 +29,7 @@ end
 
 loaded(mod) = getthing(Main, mod) != nothing
 
-const modlisteners = Dict{String,Vector{Function}}()
+const modlisteners = Dict{AbstractString,Vector{Function}}()
 
 listenmod(f, mod) =
   loaded(mod) ? f() :
