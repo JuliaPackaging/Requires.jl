@@ -31,5 +31,5 @@ end
 
 "Prevent init fns being called multiple times during precompilation."
 macro guard(ex)
-  :(current_module() == Main && $(esc(ex)))
+  :(!isprecompiling() && $(esc(ex)))
 end

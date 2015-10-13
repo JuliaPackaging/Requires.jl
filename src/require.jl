@@ -1,35 +1,22 @@
 export @require
 
-isprecompiling() = VERSION > v"v0.4-" && ccall(:jl_generating_output, Cint, ()) == 1
+isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
-if VERSION < v"0.4-"
-  Base.split(xs, x; keep=false) = split(xs, x, false)
-end
-
-@init @guard if VERSION < v"0.4-"
-
-  function Base.require(s::ASCIIString)
-    invoke(require, (String,), s)
-    loadmod(s)
-  end
-
-else
+@init @guard begin
   eval(Base, quote
     import MacroTools, Requires
   end)
   eval(Base, quote
-
-  MacroTools.@hook function require(s::Symbol)
-    super(s)
-    Requires.loadmod(string(s))
-  end
-
+    MacroTools.@hook function require(s::Symbol)
+      super(s)
+      Requires.loadmod(string(s))
+    end
   end)
 end
 
 loaded(mod) = getthing(Main, mod) != nothing
 
-const modlisteners = Dict{String,Vector{Function}}()
+const modlisteners = Dict{AbstractString,Vector{Function}}()
 
 listenmod(f, mod) =
   loaded(mod) ? f() :
