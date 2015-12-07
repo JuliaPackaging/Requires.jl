@@ -38,31 +38,3 @@ statement if you want to use the packages names without qualifying them.
 
 See [here](https://github.com/one-more-minute/Jewel.jl/blob/b0e8c184f57e8e60c83e1b9ef49511b08c88f16f/src/LightTable/display/objects.jl#L168-L170)
 for some more detailed examples.
-
--------------------------------------------------------------------------------
-
-This package also provides the `@lazymod` macro, which provides a way to load
-modules the first time they are used.
-
-```julia
-julia> using Requires
-
-julia> @lazymod DataFrames
-dataframes (generic function with 1 method)
-
-julia> dataframes().DataFrame # This will take a few seconds
-DataFrame (constructor with 22 methods)
-
-julia> dataframes().DataFrame # This will be instant
-DataFrame (constructor with 22 methods)
-```
-
-If the module you want to load lazily lives in its own file within your package,
-you can also use
-
-```julia
-@lazymod MyMod "src/mymod.jl"
-```
-
-The source file will then be `include`ed when the module is first used.
-See [here](https://github.com/one-more-minute/Jewel.jl/blob/139990c60467fc90c923d85903400f3e82678537/src/Jewel.jl#L13) for an example.
