@@ -4,10 +4,10 @@ isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
 @init @guard begin
   eval(Base, quote
-    import MacroTools, Requires
+    import Requires
   end)
   eval(Base, quote
-    MacroTools.@hook function require(s::Symbol)
+    Requires.@hook function require(s::Symbol)
       super(s)
       Requires.loadmod(string(s))
     end
