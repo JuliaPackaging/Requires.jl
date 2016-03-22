@@ -11,11 +11,22 @@ macro hook(ex)
     end
   end
   sig = :($(sig...),)
-  quote
-    let $(esc(:super)) = which($(esc(f)), $sig).func
-      $(esc(:(function $f($(args...))
-        $body
-      end)))
-    end
+  if VERSION >= v"0.5.0-dev"
+      quote
+        let $(esc(:super)) = $(esc(:(x->x)))
+            which($(esc(:super)), (Int,)).func = which($(esc(f)), $sig).func
+            $(esc(:(function $f($(args...))
+              $body
+            end)))
+        end
+      end
+  else
+      quote
+        let $(esc(:super)) = which($(esc(f)), $sig).func
+          $(esc(:(function $f($(args...))
+            $body
+          end)))
+        end
+      end
   end
 end
