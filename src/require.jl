@@ -26,7 +26,7 @@ loadmod(mod) =
   map(f->f(), get(modlisteners, mod, []))
 
 importexpr(mod::Symbol) = Expr(:import, mod)
-importexpr(mod::Expr) = Expr(:import, map(symbol, split(string(mod), "."))...)
+importexpr(mod::Expr) = Expr(:import, map(Symbol, split(string(mod), "."))...)
 
 function withpath(f, path)
   tls = task_local_storage()
