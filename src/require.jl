@@ -55,9 +55,9 @@ macro require(mod, expr)
     listenmod($(string(mod))) do
       withpath(@__FILE__) do
         err($(current_module()), $(string(mod))) do
-          $(esc(Expr(:call, :eval, Expr(:quote, Expr(:block,
-                                                     importexpr(mod),
-                                                     expr)))))
+          $(esc(:(eval($(Expr(:quote, Expr(:block,
+                                           importexpr(mod),
+                                           expr)))))))
         end
       end
     end
