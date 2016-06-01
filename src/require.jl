@@ -1,3 +1,5 @@
+import Base: require
+
 export @require
 
 isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
@@ -7,7 +9,7 @@ type Hook end
 @init @guard begin
   methods(require).mt.cache.sig = Tuple{typeof(require),Symbol,Hook}
   function Base.require(mod::Symbol)
-    eval(:require)(mod, Main.Requires.Hook())
+    eval(:(Base.require))(mod, Main.Requires.Hook())
     Main.Requires.loadmod(string(mod))
   end
 end
