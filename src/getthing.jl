@@ -30,7 +30,7 @@ function getthing(mod::Module, name::Vector{Symbol}, default = nothing)
   thing = mod
   for sym in name
     if isdefined(thing, sym)
-      thing = thing.(sym)
+      thing = getfield(thing, sym)
     else
       return default
     end
