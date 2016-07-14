@@ -1,6 +1,6 @@
 # Requires.jl
 
-[![Build Status](https://travis-ci.org/one-more-minute/Requires.jl.svg?branch=master)](https://travis-ci.org/one-more-minute/Requires.jl)
+[![Build Status](https://travis-ci.org/MikeInnes/Requires.jl.svg?branch=master)](https://travis-ci.org/MikeInnes/Requires.jl)
 
 *Requires* is a Julia package that will magically make loading packages
 faster, maybe. It supports specifying glue code in packages which will
