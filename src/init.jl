@@ -1,5 +1,3 @@
-export @init
-
 macro definit()
   quote
     if !isdefined(:__inits__)
