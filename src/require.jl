@@ -4,12 +4,25 @@ export @require
 
 isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
-type Hook end
-
 @init @guard begin
-  methods(require).mt.cache.sig = Tuple{typeof(require),Symbol,Hook}
+  ch = Channel(32)
+  c = Condition()
+  @schedule begin
+    notify(c)
+    for (name, c) in ch
+      try
+        Base.require(name)
+        notify(c)
+      catch e
+        notify(c, error = true)
+      end
+    end
+  end
+  wait(c)
   function Base.require(mod::Symbol)
-    eval(:(Base.require))(mod, Main.Requires.Hook())
+    c = Condition()
+    push!(ch, (mod, c))
+    wait(c)
     Main.Requires.loadmod(string(mod))
   end
 end
