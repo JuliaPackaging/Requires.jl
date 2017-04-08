@@ -6,9 +6,9 @@ isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
 @init @guard begin
   ch = Channel(32)
-  c = Condition()
+  cond = Condition()
   @schedule begin
-    notify(c)
+    notify(cond)
     for (name, c) in ch
       try
         Base.require(name)
@@ -18,7 +18,7 @@ isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
       end
     end
   end
-  wait(c)
+  wait(cond)
   function Base.require(mod::Symbol)
     c = Condition()
     push!(ch, (mod, c))
