@@ -35,8 +35,11 @@ listenmod(f, mod) =
   loaded(mod) ? f() :
     modlisteners[mod] = push!(get(modlisteners, mod, Function[]), f)
 
-loadmod(mod) =
-  map(f->f(), get(modlisteners, mod, []))
+function loadmod(mod)
+  fs = get(modlisteners, mod, Function[])
+  delete!(modlisteners, mod)
+  map(f->f(), fs)
+end
 
 importexpr(mod::Symbol) = Expr(:import, mod)
 importexpr(mod::Expr) = Expr(:import, map(Symbol, split(string(mod), "."))...)
