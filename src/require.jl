@@ -6,9 +6,9 @@ isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
 @init @guard begin
   ch = Channel(32)
-  c = Condition()
+  cond = Condition()
   @schedule begin
-    notify(c)
+    notify(cond)
     for (name, c) in ch
       try
         Base.require(name)
@@ -18,7 +18,7 @@ isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
       end
     end
   end
-  wait(c)
+  wait(cond)
   function Base.require(mod::Symbol)
     c = Condition()
     push!(ch, (mod, c))
@@ -35,8 +35,11 @@ listenmod(f, mod) =
   loaded(mod) ? f() :
     modlisteners[mod] = push!(get(modlisteners, mod, Function[]), f)
 
-loadmod(mod) =
-  map(f->f(), get(modlisteners, mod, []))
+function loadmod(mod)
+  fs = get(modlisteners, mod, Function[])
+  delete!(modlisteners, mod)
+  map(f->f(), fs)
+end
 
 importexpr(mod::Symbol) = Expr(:import, mod)
 importexpr(mod::Expr) = Expr(:import, map(Symbol, split(string(mod), "."))...)
