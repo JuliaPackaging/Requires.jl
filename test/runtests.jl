@@ -10,7 +10,14 @@ afterflag = false
 
 @test !beforeflag
 
+##
+# loading a module is no longer blocking on listeners
+# so to get the same control flow as on v0.5 we need
+# to explicitly wait onf finishloading
+##
+cond = finishloading(:JSON)
 using JSON
+wait(cond)
 
 @test beforeflag
 
