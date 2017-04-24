@@ -4,25 +4,16 @@ export @require
 
 isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
+# We are overwriting `Base.require` here, which is a pretty
+# horrible hack. Furthermore we need to not overwrite
+# `Base.require` while precompiling (thus @guard) and we need
+# to overwrite it in a world newer than the tasks in `oldcall.jl`
+# Since `Base.require` uses `eval` it switches automatically into
+# a newer world and call this `Base.require` from there.
+# We need to repeatedly switch back into the old world.
 @init @guard begin
-  ch = Channel(32)
-  cond = Condition()
-  @schedule begin
-    notify(cond)
-    for (name, c) in ch
-      try
-        Base.require(name)
-        notify(c)
-      catch e
-        notify(c, error = true)
-      end
-    end
-  end
-  wait(cond)
   function Base.require(mod::Symbol)
-    c = Condition()
-    push!(ch, (mod, c))
-    wait(c)
+    Main.Requires.oldcall(Base.require, mod)
     Main.Requires.loadmod(string(mod))
   end
 end
