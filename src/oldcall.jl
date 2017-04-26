@@ -12,6 +12,7 @@ const MAX_TASKS = 16
 function wfunc(channel)
   for (f, args, c) in channel
     try
+      yield()
       f(args...)
       notify(c)
     catch err
