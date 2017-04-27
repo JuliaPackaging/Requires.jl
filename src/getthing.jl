@@ -1,7 +1,7 @@
 function getthing(mod::Module, name::Vector{Symbol}, default = nothing)
   thing = mod
   for sym in name
-    if isdefined(thing, sym)
+    if Base.isbindingresolved(thing, sym)
       thing = getfield(thing, sym)
     else
       return default
@@ -10,6 +10,7 @@ function getthing(mod::Module, name::Vector{Symbol}, default = nothing)
   return thing
 end
 
+getthing(mod::Module, name::Symbol) = getthing(mod, string(name))
 getthing(mod::Module, name::AbstractString, default = nothing) =
   name == "" ?
     default :
