@@ -1,35 +1,23 @@
-import Base: require
-
 export @require
 
 isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
-# We are overwriting `Base.require` here, which is a pretty
-# horrible hack. Furthermore we need to not overwrite
-# `Base.require` while precompiling (thus @guard) and we need
-# to overwrite it in a world newer than the tasks in `oldcall.jl`
-# Since `Base.require` uses `eval` it switches automatically into
-# a newer world and call this `Base.require` from there.
-# We need to repeatedly switch back into the old world.
-@init @guard begin
-  function Base.require(mod::Symbol)
-    Main.Requires.oldcall(Base.require, mod)
-    Main.Requires.loadmod(string(mod))
-  end
+@init begin
+  push!(Base.package_callbacks, loadmod)
 end
 
-loaded(mod) = getthing(Main, mod) != nothing
+loaded(mod::Symbol) = getthing(Main, mod) != nothing
 
-const modlisteners = Dict{AbstractString,Vector{Function}}()
+const modlisteners = Dict{Symbol, Vector{Function}}()
 
-listenmod(f, mod) =
+listenmod(f, mod::Symbol) =
   loaded(mod) ? f() :
     modlisteners[mod] = push!(get(modlisteners, mod, Function[]), f)
 
 function loadmod(mod)
   fs = get(modlisteners, mod, Function[])
   delete!(modlisteners, mod)
-  map(f->f(), fs)
+  map(f->Base.invokelatest(f), fs)
 end
 
 importexpr(mod::Symbol) = Expr(:import, mod)
@@ -61,7 +49,7 @@ end
 
 macro require(mod, expr)
   ex = quote
-    listenmod($(string(mod))) do
+    listenmod($(QuoteNode(mod))) do
       withpath(@__FILE__) do
         err($(current_module()), $(string(mod))) do
           $(esc(:(eval($(Expr(:quote, Expr(:block,
