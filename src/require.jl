@@ -49,7 +49,7 @@ end
 
 macro require(mod, expr)
   ex = quote
-    listenmod($(QuoteNode(mod))) do
+    @schedule listenmod($(QuoteNode(mod))) do
       withpath(@__FILE__) do
         err($(current_module()), $(string(mod))) do
           $(esc(:(eval($(Expr(:quote, Expr(:block,
