@@ -1,27 +1,27 @@
+using Base: PkgId, loaded_modules, package_callbacks, @get!
+using Base.Meta: isexpr
+
 export @require
 
 isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
 @init begin
-  push!(Base.package_callbacks, loadmod)
+  push!(package_callbacks, loadpkg)
 end
 
-loaded(mod::Symbol) = getthing(Main, mod) != nothing
+loaded(pkg) = haskey(Base.loaded_modules, pkg)
 
-const modlisteners = Dict{Symbol, Vector{Function}}()
+const _callbacks = Dict{PkgId, Vector{Function}}()
+callbacks(pkg) = @get!(_callbacks, pkg, [])
 
-listenmod(f, mod::Symbol) =
-  loaded(mod) ? f() :
-    modlisteners[mod] = push!(get(modlisteners, mod, Function[]), f)
+listenpkg(f, pkg) =
+  loaded(pkg) ? f() : push!(callbacks(pkg), f)
 
-function loadmod(mod)
-  fs = get(modlisteners, mod, Function[])
-  delete!(modlisteners, mod)
+function loadpkg(pkg)
+  fs = callbacks(pkg)
+  delete!(_callbacks, pkg)
   map(f->Base.invokelatest(f), fs)
 end
-
-importexpr(mod::Symbol) = Expr(:import, mod)
-importexpr(mod::Expr) = Expr(:import, map(Symbol, split(string(mod), "."))...)
 
 function withpath(f, path)
   tls = task_local_storage()
@@ -41,19 +41,33 @@ function err(f, listener, mod)
   try
     f()
   catch e
-    warn("Error requiring $mod from $listener:")
-    showerror(STDERR, e, catch_backtrace())
-    println(STDERR)
+    @warn """
+      Error requiring $mod from $listener:
+      $(sprint(showerror, e, catch_backtrace()))
+      """
   end
 end
 
-macro require(mod, expr)
+function parsepkg(ex)
+  isexpr(ex, :(=)) || @goto fail
+  mod, id = ex.args
+  (mod isa Symbol && id isa String) || @goto fail
+  return Base.PkgId(Base.UUID(id), String(mod))
+  @label fail
+  error("Requires syntax is: `@require Pkg=\"uuid\"`")
+end
+
+macro require(pkg, expr)
+  pkg isa Symbol &&
+    return Expr(:macrocall, Symbol("@warn"), __source__,
+                "Requires now needs a UUID: `@require $pkg=\"uuid\"`")
+  pkg = parsepkg(pkg)
   ex = quote
-    listenmod($(QuoteNode(mod))) do
+    listenpkg($pkg) do
       withpath(@__FILE__) do
-        err($(current_module()), $(string(mod))) do
+        err($__module__, $(pkg.name)) do
           $(esc(:(eval($(Expr(:quote, Expr(:block,
-                                           importexpr(mod),
+                                           :(const $(Symbol(pkg.name)) = Base.require($pkg)),
                                            expr)))))))
         end
       end
@@ -65,5 +79,6 @@ macro require(mod, expr)
     else
       $(ex)
     end
+    nothing
   end
 end

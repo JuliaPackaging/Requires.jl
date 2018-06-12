@@ -1,22 +1,16 @@
 export @init
 
-macro definit()
-  quote
-    if !isdefined(:__inits__)
-      const $(esc(:__inits__)) = Function[]
-    end
-    if !isdefined(:__init__)
-      $(esc(:__init__))() = @init
-    end
-  end
-end
-
 function initm(ex)
   quote
-    @definit
-    push!($(esc(:__inits__)), () -> $(esc(ex)))
+    if !@isdefined __inits__
+      const __inits__ = []
+    end
+    if !@isdefined __init__
+      __init__() = @init
+    end
+    push!(__inits__, () -> $ex)
     nothing
-  end
+  end |> esc
 end
 
 function initm()
