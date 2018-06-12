@@ -1,3 +1,5 @@
+using Base.Meta: isexpr
+
 export @require
 
 isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
@@ -48,6 +50,7 @@ function err(f, listener, mod)
 end
 
 macro require(mod, expr)
+  isexpr(mod, :(=)) && (mod = mod.args[1])
   ex = quote
     listenmod($(QuoteNode(mod))) do
       withpath(@__FILE__) do
