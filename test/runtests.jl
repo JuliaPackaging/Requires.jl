@@ -1,18 +1,65 @@
-module Foo
+using Test
 
-using Requires, Test
+function writepkg(name, precomp::Bool)
+    open("$name.jl", "w") do io
+        println(io, """
+__precompile__($precomp)
 
-beforeflag = false
-afterflag = false
+module $name
 
-@require JSON="682c06a0-de6a-54ab-a142-c8b1cf79cde6" global beforeflag = true
+using Requires
 
-@test !beforeflag
-using JSON
-@test beforeflag
+flag = false
 
-@require JSON="682c06a0-de6a-54ab-a142-c8b1cf79cde6" global afterflag = true
+@require JSON="682c06a0-de6a-54ab-a142-c8b1cf79cde6" global flag = true
 
-@test afterflag
+end
+""")
+    end
+end
 
+@testset "Requires" begin
+    mktempdir() do pkgsdir
+        cd(pkgsdir) do
+            npcdir = joinpath("FooNPC", "src")
+            mkpath(npcdir)
+            cd(npcdir) do
+                writepkg("FooNPC", false)
+            end
+            npcdir = joinpath("FooPC", "src")
+            mkpath(npcdir)
+            cd(npcdir) do
+                writepkg("FooPC", true)
+            end
+        end
+        push!(LOAD_PATH, pkgsdir)
+
+        @eval using FooNPC
+        @test !FooNPC.flag
+        @eval using FooPC
+        @test !FooPC.flag
+
+        @eval using JSON
+
+        @test FooNPC.flag
+        @test FooPC.flag
+
+        cd(pkgsdir) do
+            npcdir = joinpath("FooAfterNPC", "src")
+            mkpath(npcdir)
+            cd(npcdir) do
+                writepkg("FooAfterNPC", false)
+            end
+            pcidr = joinpath("FooAfterPC", "src")
+            mkpath(pcidr)
+            cd(pcidr) do
+                writepkg("FooAfterPC", true)
+            end
+        end
+
+        @eval using FooAfterNPC
+        @eval using FooAfterPC
+        @test FooAfterNPC.flag
+        @test FooAfterPC.flag
+    end
 end
