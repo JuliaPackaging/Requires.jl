@@ -5,10 +5,6 @@ export @require
 
 isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
-@init begin
-  push!(package_callbacks, loadpkg)
-end
-
 loaded(pkg) = haskey(Base.loaded_modules, pkg)
 
 const _callbacks = Dict{PkgId, Vector{Function}}()
@@ -52,7 +48,7 @@ function parsepkg(ex)
   isexpr(ex, :(=)) || @goto fail
   mod, id = ex.args
   (mod isa Symbol && id isa String) || @goto fail
-  return Base.PkgId(Base.UUID(id), String(mod))
+  return id, String(mod)
   @label fail
   error("Requires syntax is: `@require Pkg=\"uuid\"`")
 end
@@ -61,24 +57,19 @@ macro require(pkg, expr)
   pkg isa Symbol &&
     return Expr(:macrocall, Symbol("@warn"), __source__,
                 "Requires now needs a UUID: `@require $pkg=\"uuid\"`")
-  pkg = parsepkg(pkg)
-  ex = quote
-    listenpkg($pkg) do
-      withpath(@__FILE__) do
-        err($__module__, $(pkg.name)) do
-          $(esc(:(eval($(Expr(:quote, Expr(:block,
-                                           :(const $(Symbol(pkg.name)) = Base.require($pkg)),
-                                           expr)))))))
+  id, modname = parsepkg(pkg)
+  pkg = Base.PkgId(Base.UUID(id), modname)
+  quote
+    if !isprecompiling()
+      listenpkg(Base.PkgId(Base.UUID($id), $modname)) do
+        withpath($(string(__source__.file))) do
+          err($__module__, $(pkg.name)) do
+            $(esc(:(eval($(Expr(:quote, Expr(:block,
+                                            :(const $(Symbol(pkg.name)) = Base.require($pkg)),
+                                            expr)))))))
+          end
         end
       end
     end
-  end
-  quote
-    if isprecompiling()
-      @init @guard $(ex)
-    else
-      $(ex)
-    end
-    nothing
   end
 end

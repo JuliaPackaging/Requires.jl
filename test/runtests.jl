@@ -11,7 +11,9 @@ using Requires
 
 flag = false
 
-@require JSON="682c06a0-de6a-54ab-a142-c8b1cf79cde6" global flag = true
+function __init__()
+    @require JSON="682c06a0-de6a-54ab-a142-c8b1cf79cde6" global flag = true
+end
 
 end
 """)
