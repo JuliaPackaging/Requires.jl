@@ -1,3 +1,13 @@
+### Note: changes in v0.7
+
+Requires now needs a UUID, and must be called from within your packages `__init__` function. For example:
+
+```julia
+function __init__()
+    @require JSON="682c06a0-de6a-54ab-a142-c8b1cf79cde6" do_stuff()
+end
+```
+
 # Requires.jl
 
 [![Build Status](https://travis-ci.org/MikeInnes/Requires.jl.svg?branch=master)](https://travis-ci.org/MikeInnes/Requires.jl)

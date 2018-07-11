@@ -22,8 +22,3 @@ end
 macro init(args...)
   initm(args...)
 end
-
-"Prevent init fns being called multiple times during precompilation."
-macro guard(ex)
-  :(!isprecompiling() && $(esc(ex)))
-end
