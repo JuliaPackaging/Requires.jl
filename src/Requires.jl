@@ -2,7 +2,6 @@ __precompile__()
 
 module Requires
 
-include("getthing.jl")
 include("require.jl")
 
 function __init__()
