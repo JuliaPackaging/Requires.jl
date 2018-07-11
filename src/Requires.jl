@@ -2,6 +2,7 @@ __precompile__()
 
 module Requires
 
+include("init.jl")
 include("require.jl")
 
 function __init__()
