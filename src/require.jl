@@ -56,7 +56,7 @@ end
 macro require(pkg, expr)
   pkg isa Symbol &&
     return Expr(:macrocall, Symbol("@warn"), __source__,
-                "Requires now needs a UUID: `@require $pkg=\"uuid\"`")
+                "Requires now needs a UUID; please see the readme for changes in 0.7.")
   id, modname = parsepkg(pkg)
   pkg = Base.PkgId(Base.UUID(id), modname)
   quote
