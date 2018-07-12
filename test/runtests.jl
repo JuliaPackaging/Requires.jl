@@ -10,7 +10,7 @@ function writepkg(name, precomp::Bool, submod::Bool)
             println(io, """
                 export SubModule
                 module SubModule
-                    using JSON
+                    using Colors
                     flag = true
                 end
             """)
@@ -32,7 +32,7 @@ using Requires
 flag = false
 
 function __init__()
-    @require JSON="682c06a0-de6a-54ab-a142-c8b1cf79cde6" begin
+    @require Colors="5ae59095-9a9b-59fe-a467-6f913c188581" begin
         $(action)
     end
 end
@@ -77,7 +77,7 @@ end
         @eval using FooSubPC
         @test !(:SubModule in names(FooSubPC))
 
-        @eval using JSON
+        @eval using Colors
 
         @test FooNPC.flag
         @test FooPC.flag
