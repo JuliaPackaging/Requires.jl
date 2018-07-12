@@ -58,14 +58,14 @@ macro require(pkg, expr)
     return Expr(:macrocall, Symbol("@warn"), __source__,
                 "Requires now needs a UUID; please see the readme for changes in 0.7.")
   id, modname = parsepkg(pkg)
-  pkg = Base.PkgId(Base.UUID(id), modname)
+  pkg = :(Base.PkgId(Base.UUID($id), $modname))
   quote
     if !isprecompiling()
-      listenpkg(Base.PkgId(Base.UUID($id), $modname)) do
+      listenpkg($pkg) do
         withpath($(string(__source__.file))) do
-          err($__module__, $(pkg.name)) do
+          err($__module__, $modname) do
             $(esc(:(eval($(Expr(:quote, Expr(:block,
-                                            :(const $(Symbol(pkg.name)) = Base.require($pkg)),
+                                            :(const $(Symbol(modname)) = Base.require($pkg)),
                                             expr)))))))
           end
         end
