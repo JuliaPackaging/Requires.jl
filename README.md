@@ -2,16 +2,6 @@
 
 For older versions of Julia, see https://github.com/MikeInnes/Requires.jl/blob/5683745f03cbea41f6f053182461173e236fdd94/README.md
 
-
-
-Requires now needs a UUID, and must be called from within your packages `__init__` function. For example:
-
-```julia
-function __init__()
-    @require JSON="682c06a0-de6a-54ab-a142-c8b1cf79cde6" do_stuff()
-end
-```
-
 # Requires.jl
 
 [![Build Status](https://travis-ci.org/MikeInnes/Requires.jl.svg?branch=master)](https://travis-ci.org/MikeInnes/Requires.jl)
@@ -26,7 +16,7 @@ but suppose you want to provide additional functionality if the `Gadfly` package
 Requires.jl exports a macro, `@require`, that allows you to specify that some code is conditional on having both packages available.
 
 `@require` must be within the [`__init__`](https://docs.julialang.org/en/v1/manual/modules/#Module-initialization-and-precompilation-1) method for your module.
-Here's an example that will create a new method of a function called `media` only when both packages are present:
+Here's an example that will create a new method of a function called `myfunction` only when both packages are present:
 
 ```julia
 module MyPkg
@@ -42,12 +32,12 @@ end
 end # module
 ```
 
-`Gadfly` is the name of the package, and the value in the string is the UUID which may be obtained
+The value in the string is Gadfly's UUID; this information may be obtained
 by finding the package in the registry ([JuliaRegistries](https://github.com/JuliaRegistries/General) for public packages).
 Note that the `Gadfly.Plot` type may not be available when you load `MyPkg`, but `@require`
 handles this situation without trouble.
 
-For larger amounts of code you can use `include` inside the `@require` statement:
+For larger amounts of code you can use `include` as the argument to the `@require` statement:
 
 ```julia
 function __init__()
@@ -66,6 +56,8 @@ end
 
 if you wish to exploit precompilation for the new code.
 
+## Demo
+
 For a complete demo, consider the following file named `"Reqs.jl"`:
 
 ```julia
@@ -80,8 +72,7 @@ end
 end
 ```
 
-Here's a complete demo using this file (note that if this were a registered package you could
-replace the first two commands with `using Reqs`):
+Here's a session that shows how `Colors` is only loaded after you've imported `JSON`:
 
 ```julia
 julia> include("Reqs.jl")
@@ -100,3 +91,5 @@ Colors
 julia> Reqs.Colors.RGB(1,0,0)
 RGB{N0f8}(1.0,0.0,0.0)
 ```
+
+Note that if `Reqs` were a registered package you could replace the first two commands with `using Reqs`.
