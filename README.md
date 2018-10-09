@@ -32,7 +32,7 @@ end
 end # module
 ```
 
-The value in the string is Gadfly's UUID; this information may be obtained
+The string is Gadfly's UUID; this information may be obtained
 by finding the package in the registry ([JuliaRegistries](https://github.com/JuliaRegistries/General) for public packages).
 Note that the `Gadfly.Plot` type may not be available when you load `MyPkg`, but `@require`
 handles this situation without trouble.
@@ -55,6 +55,8 @@ end
 ```
 
 if you wish to exploit precompilation for the new code.
+
+In the `@require` block, or any included files, you can use or import the package, but note that you must use the syntax `using .Gadfly` or `import .Gadfly`, rather than the usual syntax. Otherwise you will get a warning about Gadfly not being in dependencies.
 
 ## Demo
 
