@@ -33,7 +33,7 @@ function withpath(f, path)
   end
 end
 
-function err(f, listener, mod)
+function err(f, listener, mod, rethrowerror)
   try
     f()
   catch e
@@ -41,6 +41,7 @@ function err(f, listener, mod)
       Error requiring $mod from $listener:
       $(sprint(showerror, e, catch_backtrace()))
       """
+    rethrowerror && rethrow(e)
   end
 end
 
@@ -50,10 +51,27 @@ function parsepkg(ex)
   (mod isa Symbol && id isa String) || @goto fail
   return id, String(mod)
   @label fail
-  error("Requires syntax is: `@require Pkg=\"uuid\"`")
+  error("Requires syntax is: `@require Pkg=\"uuid\" [rethrowerror=false]`")
 end
 
-macro require(pkg, expr)
+function parserethrow(ex)
+  isexpr(ex, :(=)) || @goto fail
+  kw, flg = ex.args
+  (kw == :rethrow && flg isa Bool) || @goto fail
+  return flg
+  @label fail
+  error("Requires syntax is: `@require Pkg=\"uuid\" [rethrowerror=false]`")
+end
+
+macro require(pkg, args...)
+  rethrowerror = false
+  if length(args) == 2
+    rethrowerror = parserethrow(args[1])
+    expr = args[2]
+  else
+    expr = args[1]
+  end
+
   pkg isa Symbol &&
     return Expr(:macrocall, Symbol("@warn"), __source__,
                 "Requires now needs a UUID; please see the readme for changes in 0.7.")
@@ -63,7 +81,7 @@ macro require(pkg, expr)
     if !isprecompiling()
       listenpkg($pkg) do
         withpath($(string(__source__.file))) do
-          err($__module__, $modname) do
+          err($__module__, $modname, $rethrowerror) do
             $(esc(:(eval($(Expr(:quote, Expr(:block,
                                             :(const $(Symbol(modname)) = Base.require($pkg)),
                                             expr)))))))
