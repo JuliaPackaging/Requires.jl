@@ -16,7 +16,7 @@ listenpkg(f, pkg) =
 function loadpkg(pkg)
   fs = callbacks(pkg)
   delete!(_callbacks, pkg)
-  map(f->Base.invokelatest(f), fs)
+  foreach(Base.invokelatest, fs)
 end
 
 function withpath(f, path)
