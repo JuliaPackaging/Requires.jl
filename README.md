@@ -95,3 +95,24 @@ RGB{N0f8}(1.0,0.0,0.0)
 ```
 
 Note that if `Reqs` were a registered package you could replace the first two commands with `using Reqs`.
+
+## Receiving notifications in other packages
+
+Other packages can be informed about Requires' actions. To implement this, add a function
+
+```julia
+add_require(sourcefile, modcaller, id, modname, expr)
+```
+
+to your package. The arguments will have the following types:
+
+- `sourcefile`: a string, the full path to the file that contained the `@require` statement
+- `modcaller`: the active module from which the `@require` was issued
+- `id`: a string representing the UUID of the package that triggered this `@require` block (e.g.,
+  the uuid string from `@require Gadfly="c91e804a-d5a3-530f-b6f0-dfbca275c004"`)
+- `modname`: a string representing the name of the package that triggered this `@require` block
+  (e.g., `"Gadfly"` in the example above)
+- `expr`: the expression in the `@require` block
+
+Once you've added this, append the `PkgId` of your package to `Requires.notified_pkgs`
+in a pull request to Requires.
