@@ -10,7 +10,7 @@ loaded(pkg) = haskey(Base.loaded_modules, pkg)
 const _callbacks = Dict{PkgId, Vector{Function}}()
 callbacks(pkg) = @get!(_callbacks, pkg, [])
 
-listenpkg(f, pkg) =
+listenpkg(@nospecialize(f), pkg) =
   loaded(pkg) ? f() : push!(callbacks(pkg), f)
 
 function loadpkg(pkg)
@@ -21,7 +21,7 @@ function loadpkg(pkg)
   end
 end
 
-function withpath(f, path)
+function withpath(@nospecialize(f), path)
   tls = task_local_storage()
   hassource = haskey(tls, :SOURCE_PATH)
   hassource && (path′ = tls[:SOURCE_PATH])
@@ -35,7 +35,7 @@ function withpath(f, path)
   end
 end
 
-function err(f, listener, mod)
+function err(@nospecialize(f), listener, mod)
   try
     f()
   catch e
