@@ -95,3 +95,34 @@ RGB{N0f8}(1.0,0.0,0.0)
 ```
 
 Note that if `Reqs` were a registered package you could replace the first two commands with `using Reqs`.
+
+## Multiple requirements
+
+In the case that a feature depends on multiple packages, you can do the following trick:
+
+```julia
+module TestRequires
+
+using Requires
+
+function __init__()
+    @require Images="916415d5-f1e6-5110-898d-aaa5f9f070e0" begin
+        @require Revise="295af30f-e4ad-537b-8983-00126c2a3abe" println("Got both!")
+    end
+end
+
+end # module
+```
+
+The code will only be loaded in the presence of both Images.jl and Revise.jl:
+
+```julia
+julia> using TestRequires
+[ Info: Precompiling TestRequires [eb9e79a2-1324-11e9-3469-91075b92f61d]
+
+julia> using Images
+
+julia> using Revise
+[ Info: Recompiling stale cache file /tmp/pkgs/compiled/v1.0/Revise/M1Qoh.ji for Revise [295af30f-e4ad-537b-8983-00126c2a3abe]
+Got both!
+```
