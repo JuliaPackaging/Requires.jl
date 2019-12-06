@@ -7,6 +7,8 @@ isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
 loaded(pkg) = haskey(Base.loaded_modules, pkg)
 
+const notified_pkgs = [Base.PkgId(UUID(0x295af30fe4ad537b898300126c2a3abe), "Revise")]
+
 const _callbacks = Dict{PkgId, Vector{Function}}()
 callbacks(pkg) = @get!(_callbacks, pkg, [])
 
@@ -55,6 +57,19 @@ function parsepkg(ex)
   error("Requires syntax is: `@require Pkg=\"uuid\"`")
 end
 
+function withnotifications(args...)
+  for id in notified_pkgs
+    if loaded(id)
+      mod = Base.root_module(id)
+      if isdefined(mod, :add_require)
+        add_require = getfield(mod, :add_require)
+        add_require(args...)
+      end
+    end
+  end
+  return nothing
+end
+
 macro require(pkg, expr)
   pkg isa Symbol &&
     return Expr(:macrocall, Symbol("@warn"), __source__,
@@ -64,6 +79,7 @@ macro require(pkg, expr)
   quote
     if !isprecompiling()
       listenpkg($pkg) do
+        $withnotifications($(string(__source__.file)), $__module__, $id, $modname, $(esc(Expr(:quote, expr))))
         withpath($(string(__source__.file))) do
           err($__module__, $modname) do
             $(esc(:(eval($(Expr(:quote, Expr(:block,

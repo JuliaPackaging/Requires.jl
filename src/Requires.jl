@@ -1,6 +1,6 @@
-__precompile__()
-
 module Requires
+
+using UUIDs
 
 include("init.jl")
 include("require.jl")
