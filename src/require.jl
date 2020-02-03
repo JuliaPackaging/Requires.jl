@@ -1,4 +1,4 @@
-using Base: PkgId, loaded_modules, package_callbacks, @get!
+using Base: PkgId, loaded_modules, package_callbacks
 using Base.Meta: isexpr
 
 export @require
@@ -10,7 +10,7 @@ loaded(pkg) = haskey(Base.loaded_modules, pkg)
 const notified_pkgs = [Base.PkgId(UUID(0x295af30fe4ad537b898300126c2a3abe), "Revise")]
 
 const _callbacks = Dict{PkgId, Vector{Function}}()
-callbacks(pkg) = @get!(_callbacks, pkg, [])
+callbacks(pkg) = get!(()->[], _callbacks, pkg)
 
 listenpkg(@nospecialize(f), pkg) =
   loaded(pkg) ? f() : push!(callbacks(pkg), f)
