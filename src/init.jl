@@ -15,7 +15,7 @@ end
 
 function initm()
   :(for f in __inits__
-      f()
+        Base.invokelatest(f)
     end) |> esc
 end
 
