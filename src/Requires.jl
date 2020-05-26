@@ -2,6 +2,21 @@ module Requires
 
 using UUIDs
 
+"""
+    @include("file.jl")
+
+Behaves like `include`, but loads the target file contents at load-time before
+evaluating its contents at runtime. This is useful when the target file may not
+be available at runtime (for example, because of compiling a sysimg).
+
+`@require` blocks insert this automatically when you use `include`.
+"""
+macro include(file)
+    file = joinpath(dirname(String(__source__.file)), file)
+    s = String(read(file))
+    :(include_string($__module__, $s, $file))
+end
+
 include("init.jl")
 include("require.jl")
 
