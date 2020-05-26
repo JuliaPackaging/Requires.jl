@@ -77,7 +77,7 @@ macro require(pkg, expr)
   id, modname = parsepkg(pkg)
   pkg = :(Base.PkgId(Base.UUID($id), $modname))
   quote
-    if !isprecompiling()
+    if !isprecompiling() && get(ENV, "JULIA_REQUIRES_DISABLED", "0") != "1"
       listenpkg($pkg) do
         $withnotifications($(string(__source__.file)), $__module__, $id, $modname, $(esc(Expr(:quote, expr))))
         withpath($(string(__source__.file))) do
