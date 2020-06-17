@@ -8,7 +8,7 @@ For older versions of Julia, see https://github.com/MikeInnes/Requires.jl/blob/5
 
 *Requires* is a Julia package that will magically make loading packages
 faster, maybe. It supports specifying glue code in packages which will
-load automatically when a another package is loaded, so that explicit
+load automatically when another package is loaded, so that explicit
 dependencies (and long load times) can be avoided.
 
 Suppose you've written a package called `MyPkg`. `MyPkg` has core functionality that it always provides;
