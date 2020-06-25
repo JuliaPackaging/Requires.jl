@@ -87,6 +87,7 @@ macro require(pkg, expr)
   id, modname = parsepkg(pkg)
   pkg = :(Base.PkgId(Base.UUID($id), $modname))
   expr = replace_include(expr, __source__)
+  expr = macroexpand(__module__, expr)
   quote
     if !isprecompiling()
       listenpkg($pkg) do
