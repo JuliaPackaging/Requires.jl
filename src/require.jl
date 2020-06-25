@@ -72,7 +72,7 @@ end
 
 function replace_include(ex, source)
   if isexpr(ex, :call) && ex.args[1] == :include && ex.args[2] isa String
-    return Expr(:macrocall, :($Requires.var"@include"), source, ex.args[2])
+    return Expr(:macrocall, :($Requires.$(Symbol("@include"))), source, ex.args[2])
   elseif ex isa Expr
     Expr(ex.head, replace_include.(ex.args, (source,))...)
   else
