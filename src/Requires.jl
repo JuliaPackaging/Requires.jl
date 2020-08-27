@@ -15,6 +15,7 @@ if isprecompiling()
     @assert precompile(err, (Any, Module, String))
     @assert precompile(parsepkg, (Expr,))
     @assert precompile(listenpkg, (Any, Base.PkgId))
+    @assert precompile(callbacks, (Base.PkgId,))
 end
 
 end # module
