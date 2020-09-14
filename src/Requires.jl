@@ -16,6 +16,8 @@ if isprecompiling()
     @assert precompile(parsepkg, (Expr,))
     @assert precompile(listenpkg, (Any, Base.PkgId))
     @assert precompile(callbacks, (Base.PkgId,))
+    @assert precompile(withnotifications, (Vararg{Any},))
+    @assert precompile(withnotifications, (Any, Vararg{Any},))
 end
 
 end # module
