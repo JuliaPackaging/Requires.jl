@@ -15,7 +15,7 @@ callbacks(pkg) = get!(Vector{Function}, _callbacks, pkg)
 listenpkg(@nospecialize(f), pkg) =
   loaded(pkg) ? f() : push!(callbacks(pkg), f)
 
-function loadpkg(pkg)
+function loadpkg(pkg::Base.PkgId)
   if haskey(_callbacks, pkg)
     fs = _callbacks[pkg]
     delete!(_callbacks, pkg)
@@ -57,12 +57,12 @@ function parsepkg(ex)
   error("Requires syntax is: `@require Pkg=\"uuid\"`")
 end
 
-function withnotifications(args...)
+function withnotifications(@nospecialize(args...))
   for id in notified_pkgs
     if loaded(id)
       mod = Base.root_module(id)
       if isdefined(mod, :add_require)
-        add_require = getfield(mod, :add_require)
+        add_require = getfield(mod, :add_require)::Function
         add_require(args...)
       end
     end
