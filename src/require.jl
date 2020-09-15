@@ -13,7 +13,7 @@ const _callbacks = Dict{PkgId, Vector{Function}}()
 callbacks(pkg) = get!(Vector{Function}, _callbacks, pkg)
 
 listenpkg(@nospecialize(f), pkg) =
-  loaded(pkg) ? f() : push!(callbacks(pkg), f)
+  loaded(pkg) ? Base.invokelatest(f) : push!(callbacks(pkg), f)
 
 function loadpkg(pkg::Base.PkgId)
   if haskey(_callbacks, pkg)
