@@ -113,6 +113,9 @@ end
         @eval using FooAfterPC
         @eval using FooSubAfterNPC
         @eval using FooSubAfterPC
+
+        pop!(LOAD_PATH)
+
         @test FooAfterNPC.flag
         @test FooAfterPC.flag
         @test :SubModule in names(FooSubAfterNPC)
@@ -120,4 +123,47 @@ end
         @test :SubModule in names(FooSubAfterPC)
         @test FooSubAfterPC.SubModule.flag
     end
+end
+
+module EvalModule end
+
+@testset "Notifications" begin
+    push!(LOAD_PATH, joinpath(@__DIR__, "pkgs"))
+    @eval using NotifyMe
+
+    mktempdir() do pkgsdir
+        ndir = joinpath("NotifyTarget", "src")
+        cd(pkgsdir) do
+            mkpath(ndir)
+            cd(ndir) do
+                open("NotifyTarget.jl", "w") do io
+                    println(io, """
+                    module NotifyTarget
+                        using Requires
+                        function __init__()
+                            @require Example="7876af07-990d-54b4-ab0e-23690620f79a" begin
+                                f(x) = 2x
+                            end
+                        end
+                    end
+                    """)
+                end
+            end
+        end
+        push!(LOAD_PATH, pkgsdir)
+        @test isempty(NotifyMe.notified_args)
+        @eval using NotifyTarget
+        @test isempty(NotifyMe.notified_args)
+        @eval using Example
+        @test length(NotifyMe.notified_args) == 1
+        nargs = NotifyMe.notified_args[1]
+        @test nargs[1] == joinpath(pkgsdir, ndir, "NotifyTarget.jl")
+        @test nargs[2] == NotifyTarget
+        @test nargs[3] == "7876af07-990d-54b4-ab0e-23690620f79a"
+        @test nargs[4] == "Example"
+        Core.eval(EvalModule, nargs[5])
+        @test Base.invokelatest(EvalModule.f, 3) == 6
+    end
+
+    pop!(LOAD_PATH)
 end
