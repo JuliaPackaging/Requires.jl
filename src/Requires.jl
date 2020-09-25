@@ -3,18 +3,27 @@ module Requires
 using UUIDs
 
 """
-    @include("file.jl")
+    @include("somefile.jl")
 
-Behaves like `include`, but loads the target file contents at load-time before
-evaluating its contents at runtime. This is useful when the target file may not
-be available at runtime (for example, because of compiling a sysimg).
+Behaves like `include`, but caches the target file content at macro expansion
+time, and uses this as a fallback when the file doesn't exist at runtime. This
+is useful when compiling a sysimg. The argument `"somefile.jl"` must be a
+string literal, not an expression.
 
 `@require` blocks insert this automatically when you use `include`.
 """
 macro include(file)
     file = joinpath(dirname(String(__source__.file)), file)
     s = String(read(file))
-    :(include_string($__module__, $s, $file))
+    quote
+        file = $file
+        mod = $__module__
+        if isfile(file)
+            Base.include(mod, file)
+        else
+            include_string(mod, $s, file)
+        end
+    end
 end
 
 include("init.jl")
