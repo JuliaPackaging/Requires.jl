@@ -70,12 +70,24 @@ function withnotifications(@nospecialize(args...))
   return nothing
 end
 
+function replace_include(ex, source)
+  if isexpr(ex, :call) && ex.args[1] == :include && ex.args[2] isa String
+    return Expr(:macrocall, :($Requires.$(Symbol("@include"))), source, ex.args[2])
+  elseif ex isa Expr
+    Expr(ex.head, replace_include.(ex.args, (source,))...)
+  else
+    return ex
+  end
+end
+
 macro require(pkg, expr)
   pkg isa Symbol &&
     return Expr(:macrocall, Symbol("@warn"), __source__,
                 "Requires now needs a UUID; please see the readme for changes in 0.7.")
   id, modname = parsepkg(pkg)
   pkg = :(Base.PkgId(Base.UUID($id), $modname))
+  expr = replace_include(expr, __source__)
+  expr = macroexpand(__module__, expr)
   quote
     if !isprecompiling()
       listenpkg($pkg) do

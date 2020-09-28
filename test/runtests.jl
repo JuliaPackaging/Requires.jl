@@ -44,6 +44,7 @@ end
 
 @testset "Requires" begin
     mktempdir() do pkgsdir
+        local rm_CachedIncludeTest_submod_file
         cd(pkgsdir) do
             npcdir = joinpath("FooNPC", "src")
             mkpath(npcdir)
@@ -65,6 +66,14 @@ end
             cd(npcdir) do
                 writepkg("FooSubPC", true, true)
             end
+            npcdir = joinpath("CachedIncludeTest", "src")
+            mkpath(npcdir)
+            cd(npcdir) do
+                writepkg("CachedIncludeTest", true, true)
+                submod_file = abspath("CachedIncludeTest_submod.jl")
+                @test isfile(submod_file)
+                rm_CachedIncludeTest_submod_file = ()->rm(submod_file)
+            end
         end
         push!(LOAD_PATH, pkgsdir)
 
@@ -76,6 +85,12 @@ end
         @test !(:SubModule in names(FooSubNPC))
         @eval using FooSubPC
         @test !(:SubModule in names(FooSubPC))
+        @eval using CachedIncludeTest
+        # Test that the content of the file which defines
+        # CachedIncludeTest.SubModule is cached by `@require` so it can be used
+        # even when the file itself is removed.
+        rm_CachedIncludeTest_submod_file()
+        @test !(:SubModule in names(CachedIncludeTest))
 
         @eval using Colors
 
@@ -85,6 +100,7 @@ end
         @test FooSubNPC.SubModule.flag
         @test :SubModule in names(FooSubPC)
         @test FooSubPC.SubModule.flag
+        @test :SubModule in names(CachedIncludeTest)
 
         cd(pkgsdir) do
             npcdir = joinpath("FooAfterNPC", "src")
