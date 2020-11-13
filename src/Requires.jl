@@ -2,6 +2,17 @@ module Requires
 
 using UUIDs
 
+function _include_path(relpath)
+    # Reproduces include()'s runtime relative path logic
+    # See Base._include_dependency()
+    prev = Base.source_path(nothing)
+    if prev === nothing
+        path = abspath(relpath)
+    else
+        path = normpath(joinpath(dirname(prev), relpath))
+    end
+end
+
 """
     @include("somefile.jl")
 
@@ -12,16 +23,19 @@ string literal, not an expression.
 
 `@require` blocks insert this automatically when you use `include`.
 """
-macro include(file)
-    file = joinpath(dirname(String(__source__.file)), file)
-    s = String(read(file))
+macro include(relpath)
+    compiletime_path = joinpath(dirname(String(__source__.file)), relpath)
+    s = String(read(compiletime_path))
     quote
-        file = $file
-        mod = $__module__
-        if isfile(file)
-            Base.include(mod, file)
+        # NB: Runtime include path may differ from the compile-time macro
+        # expansion path if the source has been relocated.
+        runtime_path = _include_path($relpath)
+        if isfile(runtime_path)
+            # NB: For Revise compatibility, include($relpath) needs to be
+            # emitted where $relpath is a string *literal*.
+            $(esc(:(include($relpath))))
         else
-            include_string(mod, $s, file)
+            include_string($__module__, $s, $relpath)
         end
     end
 end
