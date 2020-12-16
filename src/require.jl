@@ -40,11 +40,8 @@ end
 function err(@nospecialize(f), listener, mod)
   try
     f()
-  catch e
-    @warn """
-      Error requiring $mod from $listener:
-      $(sprint(showerror, e, catch_backtrace()))
-      """
+  catch exc
+    @warn "Error requiring `$mod` from `$listener`" exception=(exc,catch_backtrace())
   end
 end
 
