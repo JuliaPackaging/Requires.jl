@@ -48,14 +48,14 @@ function __init__()
 end
 
 if isprecompiling()
-    @assert precompile(loadpkg, (Base.PkgId,))
-    @assert precompile(withpath, (Any, String))
-    @assert precompile(err, (Any, Module, String))
-    @assert precompile(parsepkg, (Expr,))
-    @assert precompile(listenpkg, (Any, Base.PkgId))
-    @assert precompile(callbacks, (Base.PkgId,))
-    @assert precompile(withnotifications, (Vararg{Any},))
-    @assert precompile(withnotifications, (Any, Vararg{Any},))
+    precompile(loadpkg, (Base.PkgId,)) || @warn "Requires failed to precompile `loadpkg`"
+    precompile(withpath, (Any, String)) || @warn "Requires failed to precompile `withpath`"
+    precompile(err, (Any, Module, String)) || @warn "Requires failed to precompile `err`"
+    precompile(parsepkg, (Expr,)) || @warn "Requires failed to precompile `parsepkg`"
+    precompile(listenpkg, (Any, Base.PkgId)) || @warn "Requires failed to precompile `listenpkg`"
+    precompile(callbacks, (Base.PkgId,)) || @warn "Requires failed to precompile `callbacks`"
+    precompile(withnotifications, (Vararg{Any,100},)) || @warn "Requires failed to precompile `withnotifications`"
+    precompile(replace_include, (Any, LineNumberNode)) || @warn "Requires failed to precompile `replace_include`"
 end
 
 end # module

@@ -1,5 +1,10 @@
 using Base: PkgId, loaded_modules, package_callbacks
 using Base.Meta: isexpr
+if isdefined(Base, :mapany)
+  const mapany = Base.mapany
+else
+  mapany(f, A::AbstractVector) = map!(f, Vector{Any}(undef, length(A)), A)
+end
 
 export @require
 
@@ -67,23 +72,22 @@ function withnotifications(@nospecialize(args...))
   return nothing
 end
 
-function replace_include(ex, source)
-  if isexpr(ex, :call) && ex.args[1] == :include && ex.args[2] isa String
-    return Expr(:macrocall, :($Requires.$(Symbol("@include"))), source, ex.args[2])
-  elseif ex isa Expr
-    Expr(ex.head, replace_include.(ex.args, (source,))...)
-  else
-    return ex
+function replace_include(ex::Expr, source)
+  if ex.head == :call && ex.args[1] === :include && ex.args[2] isa String
+    return Expr(:macrocall, :($Requires.$(Symbol("@include"))), source, ex.args[2]::String)
   end
+  return Expr(ex.head, (mapany(ex.args) do arg
+    isa(arg, Expr) ? replace_include(arg, source) : arg
+  end)...)
 end
 
-macro require(pkg, expr)
+macro require(pkg::Union{Symbol,Expr}, expr)
   pkg isa Symbol &&
     return Expr(:macrocall, Symbol("@warn"), __source__,
                 "Requires now needs a UUID; please see the readme for changes in 0.7.")
   id, modname = parsepkg(pkg)
   pkg = :(Base.PkgId(Base.UUID($id), $modname))
-  expr = replace_include(expr, __source__)
+  expr = isa(expr, Expr) ? replace_include(expr, __source__) : expr
   expr = macroexpand(__module__, expr)
   quote
     if !isprecompiling()
