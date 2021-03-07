@@ -54,7 +54,7 @@ function parsepkg(ex)
   isexpr(ex, :(=)) || @goto fail
   mod, id = ex.args
   (mod isa Symbol && id isa String) || @goto fail
-  return id, String(mod)
+  return id::String, String(mod::Symbol)
   @label fail
   error("Requires syntax is: `@require Pkg=\"uuid\"`")
 end
@@ -89,11 +89,12 @@ macro require(pkg::Union{Symbol,Expr}, expr)
   pkg = :(Base.PkgId(Base.UUID($id), $modname))
   expr = isa(expr, Expr) ? replace_include(expr, __source__) : expr
   expr = macroexpand(__module__, expr)
+  srcfile = string(__source__.file)
   quote
     if !isprecompiling()
       listenpkg($pkg) do
-        $withnotifications($(string(__source__.file)), $__module__, $id, $modname, $(esc(Expr(:quote, expr))))
-        withpath($(string(__source__.file))) do
+        $withnotifications($srcfile, $__module__, $id, $modname, $(esc(Expr(:quote, expr))))
+        withpath($srcfile) do
           err($__module__, $modname) do
             $(esc(:(eval($(Expr(:quote, Expr(:block,
                                             :(const $(Symbol(modname)) = Base.require($pkg)),

@@ -56,6 +56,7 @@ if isprecompiling()
     precompile(callbacks, (Base.PkgId,)) || @warn "Requires failed to precompile `callbacks`"
     precompile(withnotifications, (Vararg{Any,100},)) || @warn "Requires failed to precompile `withnotifications`"
     precompile(replace_include, (Any, LineNumberNode)) || @warn "Requires failed to precompile `replace_include`"
+    precompile(getfield(Requires, Symbol("@require")), (LineNumberNode, Module, Expr, Any)) || @warn "Requires failed to precompile `@require`"
 end
 
 end # module
