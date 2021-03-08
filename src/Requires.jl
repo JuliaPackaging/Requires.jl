@@ -1,8 +1,12 @@
 module Requires
 
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
+    Base.Experimental.@compiler_options compile=min optimize=0 infer=false
+end
+
 using UUIDs
 
-function _include_path(relpath)
+function _include_path(relpath::String)
     # Reproduces include()'s runtime relative path logic
     # See Base._include_dependency()
     prev = Base.source_path(nothing)
@@ -23,7 +27,7 @@ string literal, not an expression.
 
 `@require` blocks insert this automatically when you use `include`.
 """
-macro include(relpath)
+macro include(relpath::String)
     compiletime_path = joinpath(dirname(String(__source__.file)), relpath)
     s = String(read(compiletime_path))
     quote
@@ -54,9 +58,14 @@ if isprecompiling()
     precompile(parsepkg, (Expr,)) || @warn "Requires failed to precompile `parsepkg`"
     precompile(listenpkg, (Any, Base.PkgId)) || @warn "Requires failed to precompile `listenpkg`"
     precompile(callbacks, (Base.PkgId,)) || @warn "Requires failed to precompile `callbacks`"
-    precompile(withnotifications, (Vararg{Any,100},)) || @warn "Requires failed to precompile `withnotifications`"
-    precompile(replace_include, (Any, LineNumberNode)) || @warn "Requires failed to precompile `replace_include`"
+    precompile(withnotifications, (String, Module, String, String, Expr)) || @warn "Requires failed to precompile `withnotifications`"
+    precompile(replace_include, (Expr, LineNumberNode)) || @warn "Requires failed to precompile `replace_include`"
     precompile(getfield(Requires, Symbol("@require")), (LineNumberNode, Module, Expr, Any)) || @warn "Requires failed to precompile `@require`"
+
+    precompile(_include_path, (String,)) || @warn "Requires failed to precompile `_include_path`"
+    precompile(getfield(Requires, Symbol("@include")), (LineNumberNode, Module, String)) || @warn "Requires failed to precompile `@include`"
+
+    precompile(__init__, ()) || @warn "Requires failed to precompile `__init__`"
 end
 
 end # module
