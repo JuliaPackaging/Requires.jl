@@ -1,7 +1,7 @@
 module Requires
 
 if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
-    Base.Experimental.@compiler_options compile=min optimize=0 infer=false
+    @eval Base.Experimental.@compiler_options compile=min optimize=0 infer=false
 end
 
 using UUIDs
