@@ -67,11 +67,17 @@ function withnotifications(@nospecialize(args...))
   return nothing
 end
 
-function replace_include(ex, source)
+function replace_include(ex, source::LineNumberNode)
   if isexpr(ex, :call) && ex.args[1] == :include && ex.args[2] isa String
     return Expr(:macrocall, :($Requires.$(Symbol("@include"))), source, ex.args[2])
   elseif ex isa Expr
-    Expr(ex.head, replace_include.(ex.args, (source,))...)
+      v = Vector{Any}(undef, length(ex.args))
+      for i in 1:length(ex.args)
+          v[i] = replace_include(ex.args[i], source)
+      end
+      ex = Expr(ex.head)
+      ex.args = v
+      ex
   else
     return ex
   end
