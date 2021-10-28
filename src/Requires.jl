@@ -56,6 +56,7 @@ if isprecompiling()
     @assert precompile(callbacks, (Base.PkgId,))
     @assert precompile(withnotifications, (Vararg{Any},))
     @assert precompile(withnotifications, (Any, Vararg{Any},))
+    @assert precompile(replace_include, (Expr, LineNumberNode,))
 end
 
 end # module
