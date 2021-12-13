@@ -93,7 +93,6 @@ macro require(pkg::Union{Symbol,Expr}, expr)
   quote
     if !isprecompiling()
       listenpkg($pkg) do
-        $withnotifications($srcfile, $__module__, $idstr, $modname, $(esc(Expr(:quote, expr))))
         withpath($srcfile) do
           err($__module__, $modname) do
             $(esc(:(eval($(Expr(:quote, Expr(:block,
@@ -101,6 +100,7 @@ macro require(pkg::Union{Symbol,Expr}, expr)
                                             expr)))))))
           end
         end
+        $withnotifications($srcfile, $__module__, $idstr, $modname, $(esc(Expr(:quote, expr))))
       end
     end
   end
