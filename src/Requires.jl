@@ -54,7 +54,8 @@ end
 if isprecompiling()
     precompile(loadpkg, (Base.PkgId,)) || @warn "Requires failed to precompile `loadpkg`"
     precompile(withpath, (Any, String)) || @warn "Requires failed to precompile `withpath`"
-    precompile(err, (Any, Module, String)) || @warn "Requires failed to precompile `err`"
+    precompile(err, (Any, Module, String, String, Int)) || @warn "Requires failed to precompile `err`"
+    precompile(err, (Any, Module, String, String, Nothing)) || @warn "Requires failed to precompile `err`"
     precompile(parsepkg, (Expr,)) || @warn "Requires failed to precompile `parsepkg`"
     precompile(listenpkg, (Any, Base.PkgId)) || @warn "Requires failed to precompile `listenpkg`"
     precompile(callbacks, (Base.PkgId,)) || @warn "Requires failed to precompile `callbacks`"
