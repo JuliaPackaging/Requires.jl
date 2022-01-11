@@ -42,9 +42,11 @@ function withpath(@nospecialize(f), path::String)
   end
 end
 
-function err(@nospecialize(f), listener::Module, modname::String)
+function err(@nospecialize(f), listener::Module, modname::String, file::String, line)
   try
-    f()
+    t = @elapsed ret = f()
+    @debug "Requires conditionally ran code in $t seconds: `$listener` detected `$modname`" _file = file _line = line
+    ret
   catch exc
     @warn "Error requiring `$modname` from `$listener`" exception=(exc,catch_backtrace())
   end
@@ -90,11 +92,12 @@ macro require(pkg::Union{Symbol,Expr}, expr)
   expr = isa(expr, Expr) ? replace_include(expr, __source__) : expr
   expr = macroexpand(__module__, expr)
   srcfile = string(__source__.file)
+  srcline = __source__.line
   quote
     if !isprecompiling()
       listenpkg($pkg) do
         withpath($srcfile) do
-          err($__module__, $modname) do
+          err($__module__, $modname, $srcfile, $srcline) do
             $(esc(:(eval($(Expr(:quote, Expr(:block,
                                             :(const $(Symbol(modname)) = Base.require($pkg)),
                                             expr)))))))
