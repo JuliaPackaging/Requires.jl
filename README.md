@@ -1,19 +1,12 @@
-### Note: this page is for Julia 0.7 and higher
-
-For older versions of Julia, see https://github.com/MikeInnes/Requires.jl/blob/5683745f03cbea41f6f053182461173e236fdd94/README.md
-
-For Julia 1.9 and higher, Package Extensions is preferable;
-see
-[the Julia manual](https://docs.julialang.org/en/v1/manual/code-loading/#man-extensions).
-
 # Requires.jl
-
-[![Build Status](https://travis-ci.org/MikeInnes/Requires.jl.svg?branch=master)](https://travis-ci.org/MikeInnes/Requires.jl)
 
 *Requires* is a Julia package that will magically make loading packages
 faster, maybe. It supports specifying glue code in packages which will
 load automatically when another package is loaded, so that explicit
 dependencies (and long load times) can be avoided.
+
+> [!NOTE]
+> For Julia 1.9 and higher, it is preferable to use [package extensions](https://docs.julialang.org/en/v1/manual/code-loading/#man-extensions).
 
 Suppose you've written a package called `MyPkg`. `MyPkg` has core functionality that it always provides;
 but suppose you want to provide additional functionality if the `Gadfly` package is also loaded.
